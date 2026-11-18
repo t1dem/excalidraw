@@ -1,10 +1,11 @@
 import clsx from "clsx";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 
 import { CLASSES, EVENT, KEYS } from "@excalidraw/common";
 
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 
+import { useCallbackRefState } from "../../hooks/useCallbackRefState";
 import { useOutsideClick } from "../../hooks/useOutsideClick";
 import { useStable } from "../../hooks/useStable";
 import { useEditorInterface } from "../App";
@@ -34,7 +35,8 @@ const MenuContent = ({
   align?: "start" | "center" | "end";
 }) => {
   const editorInterface = useEditorInterface();
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuNode, setMenuNode] = useCallbackRefState<HTMLDivElement>();
+  const menuRef = useMemo(() => ({ current: menuNode }), [menuNode]);
 
   const callbacksRef = useStable({ onClickOutside });
 
@@ -51,7 +53,7 @@ const MenuContent = ({
           callbacksRef.onClickOutside?.();
         }
       },
-      [callbacksRef],
+      [callbacksRef, menuRef],
     ),
   );
 
@@ -86,7 +88,7 @@ const MenuContent = ({
   return (
     <DropdownMenuContentPropsContext.Provider value={{ onSelect }}>
       <DropdownMenuPrimitive.Content
-        ref={menuRef}
+        ref={setMenuNode}
         className={classNames}
         style={style}
         data-testid="dropdown-menu"
